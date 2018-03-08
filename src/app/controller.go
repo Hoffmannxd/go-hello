@@ -3,9 +3,10 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"fmt"
 )
 
-func main() {
+func registerRoutes() *gin.Engine {
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*.html")
 	r.GET("/", func(c *gin.Context) {
@@ -23,13 +24,24 @@ func main() {
 		})
 	})
 
-	admin := r.Group("/admin")
+	////////
+	r.GET("/rain-probability/:seed", func(c *gin.Context) {
+		seed := c.Param("seed")
+		fmt.Println("Reveived seed :", seed)
+	})
+
+
+	////////
+
+	admin := r.Group("/admin", gin.BasicAuth(gin.Accounts{
+		"admin": "admin",
+	}))
 	admin.GET("/", func(c *gin.Context){
 		c.HTML(http.StatusOK, "admin-overview.html", nil)
 	})
 
 	r.Static("/public", "./public")
-    //r.StaticFS("/public", httpDir("./public")) most verbose
+	//r.StaticFS("/public", httpDir("./public")) most verbose
 
-	r.Run(":3000") // listen and serve on localhost:8080
+	return r
 }
